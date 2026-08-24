@@ -1,0 +1,9 @@
+<!--index.wxml-->
+<navigation-bar title="Weixin" back="{{false}}" color="black" background="#FFF"></navigation-bar>
+<scroll-view class="scrollarea" scroll-y type="list">
+  <view class="title">
+    hello {{gender}}!
+  </view>
+  <image class="img" src="../../img/test.png" mode="widthFix"></image>
+  <button bind:tap="onClick">change</button>
+</scroll-view>

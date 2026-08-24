@@ -1,0 +1,14 @@
+/**index.wxss**/
+page {
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  text-align: center;
+}
+.title{
+  color: green;
+}
+.scrollarea {
+  flex: 1;
+  overflow-y: hidden;
+}
