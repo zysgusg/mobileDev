@@ -11,4 +11,3 @@
 **学习目标：** 1、学习使用快速启动模板创建小程序的方法；2、学习不使用模板手动创建小程序的方法。
 
 **参考资料**：https://developers.weixin.qq.com/community/business/doc/0008ae90008ff80bd48838c5e5600d
-
