@@ -4,6 +4,8 @@
   <view class="title">
     hello {{gender}}!
   </view>
+  <view class="container">
   <image class="img" src="../../img/test.png" mode="widthFix"></image>
-  <button bind:tap="onClick">change</button>
+  <button bindtap="onClick">change</button>
+  </view>
 </scroll-view>

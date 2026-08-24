@@ -6,8 +6,9 @@ page {
   text-align: center;
 }
 .title{
-  color: green;
+  color: rgb(255, 0, 0);
 }
+
 .scrollarea {
   flex: 1;
   overflow-y: hidden;
