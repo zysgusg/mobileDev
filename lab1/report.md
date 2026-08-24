@@ -63,9 +63,9 @@ Page({
 ### 效果展示
 
 初始状态
-![before](.\img\before.png)
+![before](./img/before.png)
 点击按钮奇数次
-![after](.\img\after.png)
+![after](./img/after.png)
 
 ## 二、问题总结与体会
 
