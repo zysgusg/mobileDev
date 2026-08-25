@@ -1,17 +1,40 @@
 // index.js
 Page({
-onShareAppMessage: function () {
-  return {
-    title: '分享给朋友', 
-    path: '/pages/index/index?id=123', 
-    imageUrl: '/images/share.jpg'
-  };
-},
-onShareTimeline: function () {
-  return {
-    title: '分享到朋友圈', 
-    query: 'from=timeline',
-    imageUrl: '/images/timeline.jpg'
-  };
-}
+  data: {
+    name: '周洋迅',
+    school: '中国海洋大学',
+    major: '计算机科学与技术专业',
+    email: 'zhouyangxun@stu.ouc.edu.cn',
+    heroTags: ['前端开发', '小程序开发', '技术落地'],
+    tags: ['海大CS在读', '技术务实', '深耕开发', '乐于探索', '专注落地'],
+    intro: [
+      '我是中国海洋大学信息学部计算机科学与技术专业在读学生，深耕计算机基础理论与工程实践，兼具严谨的逻辑思维与创新的开发意识，专注于用技术落地创意、用代码实现价值。',
+      '在校期间，我系统研习数据结构、计算机网络、操作系统、编程语言等核心专业课程，扎实筑牢计算机专业功底。同时积极投身实践项目与技术探索，不断打磨编程开发、问题排查、项目落地的实操能力，注重理论与实战双向提升，养成了高效迭代、严谨纠错的开发习惯。',
+      '热爱前端开发与小程序开发，痴迷于轻量化、高适配、高颜值的交互产品设计，此次个人名片小程序也是我技术实践与个人风格的具象化展示。我始终保持主动学习的热情，持续跟进前沿技术，乐于探索技术创新场景。',
+      '性格踏实沉稳、乐于协作，擅长高效沟通、分工落地团队任务。未来，我将继续深耕计算机技术领域，精进开发能力，追求更优质的技术成果与项目体验。'
+    ]
+  },
+
+  copyEmail() {
+    wx.setClipboardData({
+      data: this.data.email,
+      success: () => {
+        wx.showToast({ title: '邮箱已复制', icon: 'success' });
+      }
+    });
+  },
+
+  onShareAppMessage() {
+    return {
+      title: '周洋迅的电子名片',
+      path: '/pages/index/index'
+    };
+  },
+
+  onShareTimeline() {
+    return {
+      title: '周洋迅的电子名片',
+      query: 'from=timeline'
+    };
+  }
 })
