@@ -1,0 +1,26 @@
+<!--index.wxml-->
+<navigation-bar title="nameplate" back="{{false}}" color="black" background="#FFF"></navigation-bar>
+<scroll-view class="scrollarea" scroll-y type="list">
+<image mode="widthFix" src="../../img/head.png"></image>
+<view class="commet">
+  周洋迅
+</view>
+<view class="body">
+  <view class="title">关于我</view>
+  <view class="line">我是中国海洋大学信息学部计算机科学与技术专业在读学生，深耕计算机基础理论与工程实践，兼具严谨的逻辑思维与创新的开发意识，专注于用技术落地创意、用代码实现价值。</view>
+  <view class="line">在校期间，我系统研习数据结构、计算机网络、操作系统、编程语言等核心专业课程，扎实筑牢计算机专业功底。同时积极投身实践项目与技术探索，不断打磨编程开发、问题排查、项目落地的实操能力，注重理论与实战双向提升，养成了高效迭代、严谨纠错的开发习惯。</view>
+  <view class="line">热爱前端开发与小程序开发，痴迷于轻量化、高适配、高颜值的交互产品设计，此次个人名片小程序也是我技术实践与个人风格的具象化展示。我始终保持主动学习的热情，持续跟进前沿技术，乐于探索技术创新场景。</view>
+  <view class="line">性格踏实沉稳、乐于协作，擅长高效沟通、分工落地团队任务。未来，我将继续深耕计算机技术领域，精进开发能力，追求更优质的技术成果与项目体验。</view>
+  <view class="title">个人标签</view>
+  <view># 海大CS在读 | 技术务实 | 深耕开发 | 乐于探索 | 专注落地</view>
+</view>
+<view class="card">
+<image class="bg" mode="widthFix" src="../../img/bg.png" ></image>
+<image class="logo" mode="widthFix" src="../../img/ouc.png"></image>
+<view class="info">
+<view class="name">周洋迅</view>
+<view class="desc">中国海洋大学 信息学部 计算机科学与技术专业</view>
+<view>zhouyangxun@stu.ouc.edu.cn</view>
+</view>
+</view>
+</scroll-view>
