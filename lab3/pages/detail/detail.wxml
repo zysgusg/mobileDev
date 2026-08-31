@@ -10,5 +10,34 @@
   <view class="fav-btn">
     <button wx:if="{{isAdd}}" class="btn btn-added" bindtap="cancelFavorites">❤️ 已收藏</button>
     <button wx:else class="btn btn-add" bindtap="addFavorites">❤️ 收藏</button>
+    <button wx:if="{{isLiked}}" class="btn btn-liked" bindtap="toggleLike">👍 已点赞 {{likeCount}}</button>
+    <button wx:else class="btn btn-like" bindtap="toggleLike">👍 点赞 {{likeCount}}</button>
+  </view>
+  <!-- 评论区 -->
+  <view class="comment-section">
+    <view class="comment-title">
+      <text class="comment-bar"></text>
+      <text>评论（{{comments.length}}）</text>
+    </view>
+    <view class="comment-input-row">
+      <input class="comment-input" placeholder="说点什么吧…" value="{{commentText}}"
+        bindinput="onCommentInput" confirm-type="send" bindconfirm="submitComment" />
+      <button class="comment-btn" bindtap="submitComment">发表</button>
+    </view>
+    <view class="comment-list" wx:if="{{comments.length > 0}}">
+      <view class="comment-item" wx:for="{{comments}}" wx:for-item="item" wx:key="id">
+        <image class="c-avatar" src="{{item.avatarUrl || '../../images/my.png'}}" mode="aspectFill"></image>
+        <view class="c-body">
+          <view class="c-head">
+            <text class="c-name">{{item.nickName}}</text>
+            <text class="c-time">{{item.time}}</text>
+          </view>
+          <text class="c-content">{{item.content}}</text>
+        </view>
+      </view>
+    </view>
+    <view class="comment-empty" wx:else>
+      <text>暂无评论，快来抢沙发～</text>
+    </view>
   </view>
 </view>

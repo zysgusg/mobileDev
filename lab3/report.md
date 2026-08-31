@@ -9,7 +9,7 @@
 
 ## 一、实验内容
 
-本次实验基于模拟数据实现一个简易的高校新闻小程序，综合运用前面实验学到的视图与逻辑知识。项目共三个页面：首页（新闻列表）、新闻详情页（全文阅读与收藏）、个人中心页（登录与收藏夹），其中首页和个人中心以 tabBar 形式切换。实验提供 `common.js` 模拟数据文件、图片素材以及首页部分代码，新闻页与个人中心页的视图和逻辑需要自己完成。
+本次实验基于模拟数据实现一个简易的高校新闻小程序，综合运用前面实验学到的视图与逻辑知识。项目共三个页面：首页（搜索 + 新闻列表）、新闻详情页（全文阅读、收藏、点赞、评论）、个人中心页（登录、收藏夹、浏览历史、账户管理），其中首页和个人中心以 tabBar 形式切换。实验提供 `common.js` 模拟数据文件、图片素材以及首页部分代码，其余页面与功能（登录、收藏、点赞、评论、浏览历史、搜索、注销/切换账号）的视图和逻辑需要自己完成。
 
 ### 1. 项目创建与全局配置（`app.json`）
 
@@ -43,9 +43,14 @@
 
 ### 2. 首页设计（`index`）
 
-首页由上下两部分组成：顶部 `<swiper>` 幻灯片（3 幅图片自动轮播，`indicator-dots` 显示指示点、`interval` 控制间隔；图片用 `mode="aspectFill"` 铺满并加了圆角与阴影），下方新闻列表通过 `wx:for` 遍历 `newsList` 渲染。每条新闻以卡片形式展示海报图、标题（超长时两行省略）和日期，点击跳转到详情页：
+首页由三部分组成：顶部搜索栏、`<swiper>` 幻灯片（3 幅图片自动轮播，`indicator-dots` 显示指示点、`interval` 控制间隔；图片用 `mode="aspectFill"` 铺满并加了圆角与阴影）、新闻列表（`wx:for` 遍历 `newsList` 渲染）。每条新闻以卡片形式展示海报图、标题（超长时两行省略）和日期，点击跳转到详情页：
 
 ```xml
+<!--搜索栏-->
+<view class="search-bar">
+  <input class="search-input" placeholder="搜索新闻标题 / 内容" confirm-type="search"
+    value="{{keyword}}" bindinput="onSearchInput" />
+</view>
 <!--幻灯片滚动-->
 <view class="swiper-wrap">
   <swiper class="banner" indicator-dots="true" autoplay="true" interval="5000" duration="500"
@@ -67,7 +72,30 @@
     </view>
   </view>
 </view>
+<!--搜索无结果提示-->
+<view class="search-empty" wx:if="{{keyword && newsList.length == 0}}">未找到相关内容</view>
 ```
+
+**搜索功能**：输入时按标题/正文关键字实时过滤（忽略大小写），`onLoad` 时把完整列表额外存入 `allNews` 作为过滤数据源，关键字清空后自动恢复完整列表：
+
+```javascript
+onSearchInput: function(e) {
+  let keyword = e.detail.value.trim()
+  let list = this.data.allNews
+  if (keyword) {
+    //匹配标题或正文，忽略大小写（列表项可能不含 content，需判空）
+    list = list.filter(news => {
+      let title = (news.title || '').toLowerCase()
+      let content = (news.content || '').toLowerCase()
+      let word = keyword.toLowerCase()
+      return title.indexOf(word) > -1 || content.indexOf(word) > -1
+    })
+  }
+  this.setData({ newsList: list, keyword: e.detail.value })
+}
+```
+
+> 注意：`getNewsList()` 原实现没有拷贝 `content` 字段，过滤时对 `undefined` 调用 `toLowerCase()` 会抛异常导致"输入无反应"，已补上该字段并在过滤时做判空保护（详见问题 5）。
 
 新闻列表采用统一的卡片样式（圆角白色卡片、图片圆角、标题两行省略、日期置灰），该样式由首页和个人中心共享，统一定义在全局 `app.wxss` 中：
 
@@ -115,134 +143,248 @@ goToDetail: function(e) {
 
 ### 3. 新闻详情页设计（`detail`）
 
-详情页展示新闻标题、海报、正文和日期。核心是收藏功能：页面加载时先查本地缓存判断当前新闻是否已收藏，据此初始化 `isAdd` 状态；已收藏则直接读取缓存内容，未收藏则从 `common.getNewsDetail(id)` 获取（`code == '200'` 表示命中）：
+详情页展示新闻标题、海报、正文和日期，并提供收藏、点赞、评论三个互动功能。
+
+**收藏（按用户 id 保存）**：页面加载时读取**当前用户**的收藏列表（`favorites_<用户id>`），判断当前新闻是否已收藏，据此初始化 `isAdd` 状态：
 
 ```javascript
 onLoad(options) {
   let id = options.id
-  //检查当前新闻是否在收藏夹中
-  var newarticle = wx.getStorageSync(id)
-  if (newarticle != '') {        //已存在
-    this.setData({ isAdd: true, article: newarticle })
-  } else {                       //不存在
+  //检查当前新闻是否在当前用户的收藏夹中
+  let userId = common.getCurrentUserId()   //当前用户 id
+  let myList = common.getFavorites(userId) //该用户的收藏列表
+  let exist = myList.filter(item => item.id == id)
+  if (exist.length > 0) {                  //已存在
+    this.setData({ isAdd: true, article: exist[0] })
+  } else {                                 //不存在
     let result = common.getNewsDetail(id)
     if (result.code == '200') {
       this.setData({ article: result.news, isAdd: false })
     }
   }
+  this.initLike()      //初始化点赞状态
+  this.recordHistory() //记录浏览历史
+  this.loadComments()  //加载评论
 },
 //添加收藏
 addFavorites: function() {
+  if (!this.checkLogin()) { return }       //未登录拦截
   let article = this.data.article
-  wx.setStorageSync(article.id, article)   //以新闻id为key存入本地缓存
+  let userId = common.getCurrentUserId()
+  let list = common.getFavorites(userId)
+  if (!list.some(item => item.id == article.id)) {  //避免重复收藏
+    list.push(article)
+    common.saveFavorites(userId, list)     //按用户 id 保存
+  }
   this.setData({ isAdd: true })
 },
 //取消收藏
 cancelFavorites: function() {
   let article = this.data.article
-  wx.removeStorageSync(article.id)         //从本地缓存删除
+  let userId = common.getCurrentUserId()
+  let list = common.getFavorites(userId).filter(item => item.id != article.id)
+  common.saveFavorites(userId, list)       //按用户 id 保存
   this.setData({ isAdd: false })
 }
 ```
 
-页面上通过 `wx:if` / `wx:else` 根据 `isAdd` 动态显示"已收藏"和"未收藏"两个按钮，按钮做成胶囊样式，文字在按钮内水平垂直居中：
+**点赞（全局计数，其他用户的点赞可见）**：采用"本人状态 + 全局总数"双轨存储——`likes_<用户id>` 记录本人是否点过赞（防止重复计数），`likeCount_<新闻id>` 记录该新闻的点赞总数，点赞时全局 +1、取消时全局 -1，任何账号打开详情页都能看到所有用户的点赞数：
+
+```javascript
+// 初始化点赞状态：本人是否点过赞 + 全网点赞总数
+initLike: function() {
+  let userId = common.getCurrentUserId()
+  let likes = common.getLikes(userId)
+  let isLiked = likes.indexOf(this.data.article.id) > -1
+  this.setData({
+    isLiked: isLiked,
+    likeCount: common.getLikeCount(this.data.article.id)  //全局点赞总数
+  })
+},
+// 点赞 / 取消点赞
+toggleLike: function() {
+  if (!this.checkLogin()) { return }       //未登录拦截
+  let articleId = this.data.article.id
+  let userId = common.getCurrentUserId()
+  let likes = common.getLikes(userId)
+  let isLiked = !this.data.isLiked
+  if (isLiked) {
+    likes.push(articleId)
+    common.setLikeCount(articleId, common.getLikeCount(articleId) + 1)  //全局 +1
+  } else {
+    likes = likes.filter(id => id != articleId)
+    common.setLikeCount(articleId, Math.max(0, common.getLikeCount(articleId) - 1))  //全局 -1
+  }
+  common.saveLikes(userId, likes)
+  this.setData({ isLiked: isLiked, likeCount: common.getLikeCount(articleId) })
+}
+```
+
+**评论（公共内容）**：评论按新闻存储于 `comments_<新闻id>`，对**所有账号可见**（与收藏等个人私有数据相反）。每条评论包含昵称、头像、内容、时间，新→旧排列，最多保留 50 条：
+
+```javascript
+// 发表评论
+submitComment: function() {
+  if (!this.checkLogin()) { return }       //未登录拦截
+  let content = this.data.commentText.trim()
+  if (!content) {
+    wx.showToast({ title: '评论内容不能为空', icon: 'none' })
+    return
+  }
+  let user = common.getCurrentUser()       //当前用户（未登录为游客）
+  let comment = {
+    id: Date.now(),
+    nickName: user.nickName,
+    avatarUrl: user.avatarUrl,
+    content: content,
+    time: util.formatTime(new Date())      //评论时间
+  }
+  common.addComment(this.data.article.id, comment)
+  this.setData({ commentText: '' })       //清空输入框
+  this.loadComments()                     //刷新评论列表
+}
+```
+
+```xml
+<view class="comment-input-row">
+  <input class="comment-input" placeholder="说点什么吧…" value="{{commentText}}"
+    bindinput="onCommentInput" confirm-type="send" bindconfirm="submitComment" />
+  <button class="comment-btn" bindtap="submitComment">发表</button>
+</view>
+<view class="comment-list" wx:if="{{comments.length > 0}}">
+  <view class="comment-item" wx:for="{{comments}}" wx:for-item="item" wx:key="id">
+    <image class="c-avatar" src="{{item.avatarUrl || '../../images/my.png'}}" mode="aspectFill"></image>
+    <view class="c-body">
+      <view class="c-head">
+        <text class="c-name">{{item.nickName}}</text>
+        <text class="c-time">{{item.time}}</text>
+      </view>
+      <text class="c-content">{{item.content}}</text>
+    </view>
+  </view>
+</view>
+```
+
+**登录检查**：收藏、点赞、发表评论前先调用 `checkLogin()`，未登录（用户 id 为 `guest`）时弹出提示并引导跳转"我的"页登录：
+
+```javascript
+checkLogin: function() {
+  let userId = common.getCurrentUserId()
+  if (userId !== 'guest') { return true }  //已登录
+  wx.showModal({
+    title: '提示',
+    content: '登录后可进行该操作',
+    confirmText: '去登录',
+    success(res) {
+      if (res.confirm) { wx.switchTab({ url: '/pages/my/my' }) }
+    }
+  })
+  return false
+}
+```
+
+操作按钮区：收藏与点赞两个按钮并排（`flex` 布局），未操作时白底蓝字、已操作时蓝底白字：
 
 ```xml
 <view class="fav-btn">
   <button wx:if="{{isAdd}}" class="btn btn-added" bindtap="cancelFavorites">❤️ 已收藏</button>
   <button wx:else class="btn btn-add" bindtap="addFavorites">❤️ 收藏</button>
+  <button wx:if="{{isLiked}}" class="btn btn-liked" bindtap="toggleLike">👍 已点赞 {{likeCount}}</button>
+  <button wx:else class="btn btn-like" bindtap="toggleLike">👍 点赞 {{likeCount}}</button>
 </view>
-```
-
-按钮通过两套样式区分状态：未收藏为白底蓝字（`.btn-add`），已收藏为蓝底白字（`.btn-added`）：
-
-```css
-button.btn {
-  width: 360rpx;
-  height: 88rpx;
-  border-radius: 44rpx;
-  font-size: 30rpx;
-  margin: 0;
-  padding: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  text-align: center;
-}
-button.btn-add {
-  background: #ffffff;
-  color: #328EEB;
-  border: 2rpx solid #328EEB;
-}
-button.btn-added {
-  background: linear-gradient(135deg, #328EEB, #65B0FF);
-  color: #ffffff;
-}
 ```
 
 ### 4. 个人中心页设计（`my`）
 
-个人中心分登录区和收藏列表两部分。未登录时只显示"未登录，点此登录"按钮，点击后通过 `wx.getUserProfile` 获取微信头像与昵称并展示：
+**登录（官方头像昵称填写能力）**：`wx.getUserProfile` 自基础库 2.27.1（2022 年 10 月起）被微信回收，真机上不再返回真实头像昵称（一律灰色头像 + "微信用户"），因此改用官方推荐的"头像昵称填写能力"：
 
-```javascript
-getUserInfo() {
-  let that = this
-  wx.getUserProfile({
-    desc: 'desc',
-    success(res) {
-      res = res.userInfo
-      that.setData({
-        isLogin: true,
-        src: res.avatarUrl,
-        nickName: res.nickName
-      })
-    }
-  })
-}
+头像：`<button open-type="chooseAvatar">` 唤起头像选择器，`bind:chooseavatar` 回调的 `e.detail.avatarUrl` 为真实头像；
+
+昵称：`<input type="nickname">` 输入框，聚焦时键盘上方可一键填充微信昵称。
+
+点击"未登录，点此登录"后弹出**登录方式选择面板**，可一键选择：
+
+**使用微信账号头像昵称**：先尝试 `wx.getUserProfile`（低版本基础库/旧版微信仍可返回真实信息，作老端兜底）；新客户端拿到匿名信息时自动进入面板内的填写区，用户选头像 + 快捷填昵称后确认登录；
+
+**使用匿名头像昵称**：一键登录，使用微信官方匿名灰色头像 + 昵称"微信用户"。
+
+```xml
+<view class="login-popup" catchtap="noop">
+  <!-- 第一步：选择登录方式 -->
+  <block wx:if="{{loginMode === 'choose'}}">
+    <text class="popup-title">选择登录方式</text>
+    <button class="popup-btn primary" bindtap="useRealInfo">使用微信账号头像昵称</button>
+    <button class="popup-btn" bindtap="useAnonymous">使用匿名头像昵称</button>
+  </block>
+  <!-- 第二步：官方头像昵称填写能力（新端获取真实头像昵称的唯一途径） -->
+  <block wx:else>
+    <button class="popup-avatar-btn" open-type="chooseAvatar" bind:chooseavatar="onChooseAvatar">
+      <image class="popup-avatar" src="{{src}}" mode="aspectFill"></image>
+    </button>
+    <input class="popup-input" type="nickname" placeholder="点击填写微信昵称" bindinput="onNicknameInput" />
+    <button class="popup-btn primary" bindtap="confirmRealInfo">确认登录</button>
+  </block>
+</view>
 ```
 
-登录后 `onShow` 检查登录状态并调用 `getMyFavorites` 读取本地缓存，构建收藏新闻列表。读取时不是直接使用缓存 key 的数量，而是逐个校验值是否为真正的新闻对象（同时具有 `id` 和 `title`），过滤掉系统写入的非新闻数据后再计数和展示，保证收藏数量与列表内容准确一致：
+登录成功后 `doLogin` 将 `{id, nickName, avatarUrl}` 写入 `currentUser` 缓存（本实验无后端，以**昵称作为用户 id**；匿名账号共用"微信用户"空间），页面 `onLoad` 时从缓存恢复登录态，小程序重启后仍保持登录。未登录的游客在数据层面对应 `guest` 用户。
+
+**收藏列表（按用户 id）**：直接读取当前用户的 `favorites_<用户id>` 收藏数组，配合本地缓存持久化，各账号收藏互不可见：
 
 ```javascript
 getMyFavorites: function() {
-  let info = wx.getStorageInfoSync()
-  let keys = info.keys
-
-  let myList = [];
-  for (var i = 0; i < keys.length; i++) {
-    let obj = wx.getStorageSync(keys[i])
-    //缓存中可能混有系统写入的非新闻数据，只保留真正的新闻收藏
-    if (obj && obj.id && obj.title) {
-      myList.push(obj)
-    }
-  }
+  let userId = common.getCurrentUserId()
+  let myList = common.getFavorites(userId)
   this.setData({ newsList: myList, number: myList.length })
-},
+}
 ```
 
-收藏列表采用与首页完全相同的卡片结构与样式（共用 `app.wxss` 中的列表样式），点击任意收藏新闻同样通过 `goToDetail` 跳转阅读全文。
+**浏览历史**：详情页每次打开即自动记录（`history_<用户id>`，同一条新闻去重只保留最近一次、新→旧排列、上限 20 条，带浏览时间）；个人中心新增"浏览历史"区块展示列表，标题栏右侧可一键**清空**，点击条目可回看。
+
+**账户操作**：登录后显示"切换账号"与"注销登录"两个按钮——注销清除登录态并清空页面数据，切换账号则注销后立即弹出登录面板重新选择账号。由于收藏、历史、点赞状态均按用户 id 存储，切换账号后互不干扰：
+
+```javascript
+// 注销登录：清除登录状态和当前用户信息
+logout() {
+  wx.removeStorageSync('currentUser')
+  this.setData({
+    isLogin: false, src: '../../images/my.png', nickName: '',
+    showLoginPopup: false, newsList: [], number: 0, historyList: []
+  })
+},
+// 切换账号：注销后立即弹出登录面板
+switchAccount() {
+  this.logout()
+  this.setData({ showLoginPopup: true, loginMode: 'choose' })
+}
+```
 
 ### 5. 功能完善与个性化改进
 
 在完成基础功能后，对小程序做了以下完善：
 
-**收藏计数修正**：本地缓存中除收藏的新闻外还包含系统写入的其他数据，直接统计 `keys.length` 会始终多出 1 个，改为按"是否真正的新闻对象"过滤后再计数；
-**收藏列表样式统一**：个人中心收藏列表与首页新闻列表共用 `app.wxss` 中的卡片样式（图片尺寸、圆角、标题两行省略、日期置灰），视觉上如同一体；
+**登录改用官方头像昵称填写能力**：`wx.getUserProfile` 已回收，真机无法获取真实头像昵称，改用 `chooseAvatar` 按钮 + `nickname` 输入框，并提供"真实信息 / 匿名信息"一键选择弹窗（详见问题 4）；
+**数据按可见性分层存储**：个人私有数据（收藏 `favorites_<用户id>`、点赞状态 `likes_<用户id>`、浏览历史 `history_<用户id>`）按用户 id 隔离，公共数据（评论 `comments_<新闻id>`、点赞总数 `likeCount_<新闻id>`）按新闻全局共享——收藏/历史/点赞随账号切换，评论/点赞数所有账号可见；
+**注销与切换账号**：登录态持久化到 `currentUser` 缓存（重启恢复），支持一键注销、切换账号（注销 + 弹面板）；
+**浏览历史**：自动记录最近浏览的新闻（去重、上限 20 条、带时间），我的页面可查看与清空；
+**搜索**：首页按标题/正文关键字实时过滤，无结果时给出空状态提示；
+**登录检查**：收藏、点赞、评论三个操作在未登录时弹窗提示"登录后可进行该操作"并引导去登录；
+**收藏计数修正**：原实现统计缓存全部 key 会混入系统数据导致计数多 1，后改为"按用户 id 存收藏数组、直接取数组长度"，从根源上消除了该问题；
 **幻灯片点击跳转**：给 `swiperImg` 数据补充了对应的新闻 `id`，并为轮播图片绑定点击事件，点击幻灯片即可进入对应新闻详情；
 **详情页文字排版优化**：标题加大加粗、正文放入白色卡片并加大行高、两端对齐、日期弱化为浅灰色，阅读体验更舒适；
-**整体界面美化**：统一"海大蓝 + 白色卡片"风格——页面背景改为浅灰，轮播图加圆角与阴影，新闻列表由单行文本改为"左图右文"卡片（图片圆角、标题两行省略、日期置灰），个人中心登录区改为渐变蓝色头部卡片（圆形头像 + 昵称 + 欢迎语），并给收藏按钮设计两态样式（未收藏白底蓝字、已收藏蓝底白字），文字在按钮内居中。
+**整体界面美化**：统一"海大蓝 + 白色卡片"风格——页面背景改为浅灰，轮播图加圆角与阴影，新闻列表由单行文本改为"左图右文"卡片（图片圆角、标题两行省略、日期置灰），个人中心登录区改为渐变蓝色头部卡片（圆形头像 + 昵称 + 欢迎语），收藏/点赞/评论按钮均做两态胶囊样式，文字在按钮内居中。
 
 ### 6. 运行效果
 
-首页（幻灯片 + 新闻列表）：
+首页（搜索栏 + 幻灯片 + 新闻列表）：
 
 ![](./img/1.png)
 
-新闻详情页（全文 + 收藏/取消收藏按钮）：
+新闻详情页（全文 + 收藏/点赞按钮 + 评论区）：
 
 ![](./img/2.png)
 
-个人中心页（登录状态 + 收藏夹列表）：
+个人中心页（登录状态 + 收藏夹 + 浏览历史 + 账户操作）：
 
 ![](./img/3.png)
 
@@ -260,7 +402,7 @@ getMyFavorites: function() {
 
 **现象**：收藏 2 条新闻后，"我的收藏"显示数量为 3。
 
-**解决**：`wx.getStorageInfoSync()` 返回的 `keys` 是本地缓存中**所有**的 key，除了收藏的新闻（以新闻 id 为 key），还混有系统写入的其他数据。原来的代码直接取 `keys.length` 作为收藏数量，必然多算；收藏列表里也会混入一个非新闻对象。改为在遍历时用 `obj.id && obj.title` 校验是否为真正的新闻，只把符合条件的对象加入列表，并用过滤后的 `myList.length` 作为数量。
+**解决**：`wx.getStorageInfoSync()` 返回的 `keys` 是本地缓存中**所有**的 key，除了收藏的新闻（以新闻 id 为 key），还混有系统写入的其他数据。原来的代码直接取 `keys.length` 作为收藏数量，必然多算。当时改为遍历时用 `obj.id && obj.title` 校验是否为真正的新闻再计数；后来收藏改造成"按用户 id 存收藏数组、直接取数组长度"，从存储结构上彻底消除了这一问题。
 
 ### 问题 3：幻灯片不能点击进入详情页
 
@@ -268,8 +410,36 @@ getMyFavorites: function() {
 
 **解决**：`swiperImg` 数据源里只有图片地址 `src`，没有新闻 `id`，跳转时没有可携带的参数。给每条数据补上与 `common.js` 中对应的 `id`，并在 `<image>` 上添加 `data-id="{{item.id}}"` 和 `bindtap="goToDetail"`，复用首页已有的跳转函数即可实现"点击幻灯片 → 打开对应新闻"。
 
+### 问题 4：真机调试获取不到微信头像昵称
 
+**现象**：登录时通过 `wx.getUserProfile` 获取头像昵称，开发者工具里正常，真机调试时拿到的只有灰色默认头像和"微信用户"。
+
+**解决**：查证官方规则后确认，微信自 2022 年 10 月 25 日（基础库 2.27.1）起收回了 `wx.getUserProfile` 接口，新客户端一律返回匿名头像昵称，真实信息只能通过官方"头像昵称填写能力"获取——头像用 `<button open-type="chooseAvatar">`，昵称用 `<input type="nickname">`。改造后的登录流程：点击登录弹出选择面板，可一键选择"使用微信账号头像昵称"（先尝试 `getUserProfile` 兼容老端，新端进入填写面板）或"使用匿名头像昵称"（灰色头像 + 微信用户）。
+
+**体会**：开发者工具与真机行为并不完全一致，涉及微信开放能力的功能必须以真机验证为准；平台的接口规则会随版本演进，开发时应优先采用官方文档推荐的最新方案。
+
+### 问题 5：搜索栏输入后无实际功能
+
+**现象**：首页搜索框输入关键字后，新闻列表毫无反应。
+
+**解决**：搜索过滤同时匹配标题与正文，而 `getNewsList()` 返回的列表项并不包含 `content` 字段，`news.content.toLowerCase()` 对 `undefined` 调用方法抛出 TypeError，过滤回调在 `setData` 之前中断，表现为"输入无反应"。修复：过滤时对字段做判空保护（`(news.content || '').toLowerCase()`），并给 `getNewsList()` 补上 `content` 字段让正文关键词也能命中。
+
+**体会**：模拟数据与页面使用的字段必须保持一致，"字段缺失导致的方法调用异常"在界面上往往表现为功能失效而非明显报错，需要结合控制台日志定位问题根源。
+
+### 问题 6：看不到其他用户的点赞
+
+**现象**：账号 A 点赞后计数为 1，切换账号 B 打开同一条新闻，计数仍为 0。
+
+**解决**：原实现把点赞数存在各用户的缓存里，计数只包含本人。改为"本人状态 + 全局计数"双轨存储：`likes_<用户id>` 记录本人是否点过（保证不重复计数），`likeCount_<新闻id>` 记录全网总数，点赞全局 +1、取消全局 -1，任何账号都能看到所有用户的点赞。
+
+**体会**："个人私有数据"（收藏、历史、点赞状态）与"公共共享数据"（评论、点赞总数）在本地存储方案中要用不同的 key 组织方式，设计存储结构前先想清楚数据的可见性范围。
 
 ### 收获与体会
 
-本次实验让我把前面学到的知识完整地串了起来：`swiper` 轮播、`wx:for` 列表渲染、`wx:if/wx:else` 条件渲染、`navigateTo` 页面跳转与参数传递，以及 `wx.setStorageSync / removeStorageSync / getStorageInfoSync` 本地存储 API 的配合使用。通过收藏功能，我理解了"以数据 id 为 key 的缓存存取"这种简单可靠的本地数据持久化方式；通过排查计数多 1 和变量未定义的报错，加深了对小程序数据绑定机制和缓存 key 空间的认识。整个开发过程也让我体会到小程序"页面视图 + 逻辑数据分离"的架构思想，调试时利用开发者工具的 AppData 面板观察数据变化非常高效。
+本次实验让我把前面学到的知识完整地串了起来：`swiper` 轮播、`wx:for` 列表渲染、`wx:if/wx:else` 条件渲染、`navigateTo` 页面跳转与参数传递，以及 `wx.setStorageSync / removeStorageSync / getStorageInfoSync` 本地存储 API 的配合使用。在此基础上，我还独立完成了搜索、点赞、评论、浏览历史、多账号登录等扩展功能，重点收获有三点：
+
+一是**学会了微信开放能力的正确用法**——`wx.getUserProfile` 被回收后，通过官方"头像昵称填写能力"（`chooseAvatar` + `nickname` 输入框）在真机上拿到了真实头像昵称，也学会了用"兼容老端 + 新端兜底"的方式平滑过渡接口变更；
+
+二是**理解了数据存储结构设计**——按"数据可见性"把本地缓存分为用户私有（收藏/历史/点赞状态，`xxx_<用户id>`）与全局公共（评论/点赞总数，`xxx_<新闻id>`）两类，实现了多账号数据隔离与公共数据的共享展示，切换账号、注销等交互也因此水到渠成；
+
+三是**锻炼了定位真实 bug 的能力**——真机与开发者工具的差异、字段缺失导致的隐性异常、局部缓存计数与全局可见性的矛盾，这些问题都靠控制台日志 + 阅读官方文档一步步排查解决。整个开发过程让我深刻体会到小程序"页面视图 + 逻辑数据分离"的架构思想，调试时利用开发者工具的 AppData 面板观察数据变化非常高效。

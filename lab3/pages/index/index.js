@@ -12,6 +12,8 @@ Page({
       {id: '304083', src: 'https://gaopursuit.oss-cn-beijing.aliyuncs.com/2022/newsimage2.jpg'},
       {id: '305670', src: 'https://gaopursuit.oss-cn-beijing.aliyuncs.com/2022/newsimage3.jpg'}
     ],
+    keyword:'',//搜索关键字
+    allNews:[],//全部新闻（用于搜索过滤）
   },
 
   /**
@@ -34,7 +36,26 @@ Page({
     let list = common.getNewsList()
     //更新列表数据
     this.setData({
-      newsList: list
+      newsList: list,
+      allNews: list//保存全部新闻，供搜索过滤
+    })
+  },
+  // 搜索：按标题/正文关键字实时过滤新闻列表
+  onSearchInput: function(e) {
+    let keyword = e.detail.value.trim()
+    let list = this.data.allNews
+    if( keyword ){
+      //匹配标题或正文，忽略大小写（列表项可能不含 content，需判空）
+      list = list.filter(news => {
+        let title = (news.title || '').toLowerCase()
+        let content = (news.content || '').toLowerCase()
+        let word = keyword.toLowerCase()
+        return title.indexOf(word) > -1 || content.indexOf(word) > -1
+      })
+    }
+    this.setData({
+      newsList: list,
+      keyword: e.detail.value
     })
   },
 

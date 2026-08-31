@@ -41,6 +41,7 @@
 }
 
 button.login-btn {
+  padding: 0;/* 重置 button 默认左右内边距，保证文字水平居中 */
   margin-top: 30rpx;
   width: 360rpx;
   height: 84rpx;
@@ -83,4 +84,138 @@ button.login-btn::after {
   color: #999999;
   font-size: 26rpx;
   padding: 120rpx 0;
+}
+
+/* 登录弹窗 */
+.login-mask {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.login-popup {
+  width: 560rpx;
+  background: #ffffff;
+  border-radius: 24rpx;
+  padding: 48rpx 40rpx;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.popup-title {
+  font-size: 34rpx;
+  font-weight: bold;
+  color: #333333;
+  margin-bottom: 40rpx;
+}
+
+button.popup-btn {
+  padding: 0;/* 重置 button 默认左右内边距，保证文字水平居中 */
+  width: 100%;
+  height: 88rpx;
+  line-height: 88rpx;
+  border-radius: 44rpx;
+  margin-top: 24rpx;
+  background: #f2f3f5;
+  color: #333333;
+  font-size: 30rpx;
+}
+
+button.popup-btn.primary {
+  background: #328EEB;
+  color: #ffffff;
+}
+
+button.popup-btn::after {
+  border: none;
+}
+
+/* 填写面板：头像选择按钮（重置 button 默认样式） */
+button.popup-avatar-btn {
+  padding: 0;
+  width: 144rpx;
+  height: 144rpx;
+  border-radius: 50%;
+  background: transparent;
+  line-height: normal;
+}
+
+button.popup-avatar-btn::after {
+  border: none;
+}
+
+.popup-avatar {
+  width: 144rpx;
+  height: 144rpx;
+  border-radius: 50%;
+  background-color: #f2f3f5;
+}
+
+.popup-tip {
+  margin-top: 16rpx;
+  font-size: 24rpx;
+  color: #999999;
+}
+
+.popup-input {
+  margin-top: 32rpx;
+  width: 100%;
+  height: 88rpx;
+  border-radius: 44rpx;
+  background: #f2f3f5;
+  color: #333333;
+  font-size: 30rpx;
+  text-align: center;
+  box-sizing: border-box;
+}
+
+/* 浏览历史 */
+.myHistory {
+  padding: 24rpx;
+}
+
+.clear-history {
+  margin-left: auto;
+  font-size: 26rpx;
+  color: #999999;
+  padding: 4rpx 12rpx;
+}
+
+/* 账户操作：切换账号 / 注销登录 */
+.account-ops {
+  display: flex;
+  padding: 0 24rpx 48rpx;
+}
+
+button.op-btn {
+  padding: 0;/* 重置 button 默认左右内边距，保证文字水平居中 */
+  flex: 1;
+  height: 88rpx;
+  line-height: 88rpx;
+  border-radius: 44rpx;
+  font-size: 30rpx;
+  background: #ffffff;
+  margin: 0 10rpx;
+}
+
+button.op-btn::after {
+  border: none;
+}
+
+button.op-btn.switch {
+  color: #328EEB;
+  border: 2rpx solid #328EEB;
+}
+
+button.op-btn.logout {
+  color: #e64340;
+  border: 2rpx solid #e64340;
 }

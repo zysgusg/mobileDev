@@ -1,4 +1,9 @@
 <!--pages/index/index.wxml-->
+<!--搜索栏-->
+<view class="search-bar">
+  <input class="search-input" placeholder="搜索新闻标题 / 内容" confirm-type="search"
+    value="{{keyword}}" bindinput="onSearchInput" />
+</view>
 <!--幻灯片滚动-->
 <view class="swiper-wrap">
   <swiper class="banner" indicator-dots="true" autoplay="true" interval="5000" duration="500"
@@ -20,3 +25,5 @@
     </view>
   </view>
 </view>
+<!--搜索无结果提示-->
+<view class="search-empty" wx:if="{{keyword && newsList.length == 0}}">未找到相关内容</view>
