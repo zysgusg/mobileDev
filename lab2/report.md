@@ -90,7 +90,9 @@ onShareAppMessage() {
 
 ### 5. 运行效果
 
-![](.\img\1.png)![](.\img\2.png)
+![](./img/1.png)
+
+![](./img/2.png)
 
 ## 二、问题总结与体会
 

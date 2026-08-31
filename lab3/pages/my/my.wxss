@@ -1,37 +1,86 @@
-/* 登陆页面 */
-.myLogin{
-  height: 400rpx;
-  background-color: #328EEB;
+/* 个人中心头部 */
+.myHeader {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 70rpx 40rpx;
+  background: linear-gradient(135deg, #328EEB, #65B0FF);
+  color: #ffffff;
+}
+
+.myHeader .avatar {
+  width: 144rpx;
+  height: 144rpx;
+  border-radius: 50%;
+  border: 6rpx solid rgba(255, 255, 255, 0.85);
+  background-color: #ffffff;
+  flex-shrink: 0;
+}
+
+.user-info {
+  margin-left: 32rpx;
+  display: flex;
+  flex-direction: column;
+}
+
+.nickname {
+  font-size: 38rpx;
+  font-weight: bold;
+}
+
+.welcome {
+  font-size: 24rpx;
+  margin-top: 12rpx;
+  opacity: 0.9;
+}
+
+.login-box {
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: space-around;
 }
-.myLogin image{
-  height: 200rpx;
-  width:200rpx;
-  border-radius: 50%;
+
+button.login-btn {
+  margin-top: 30rpx;
+  width: 360rpx;
+  height: 84rpx;
+  line-height: 84rpx;
+  border-radius: 42rpx;
+  background: #ffffff;
+  color: #328EEB;
+  font-size: 30rpx;
+  box-shadow: 0 8rpx 20rpx rgba(0, 0, 0, 0.15);
 }
-.myLogin text{
-  color: white;
+
+button.login-btn::after {
+  border: none;
 }
-/* 收藏列表（样式与首页新闻列表一致） */
-#news-list {
-  min-height: 600rpx;
-  padding: 15rpx;
+
+/* 收藏列表 */
+.myFavorite {
+  padding: 24rpx;
 }
-.list-item{
+
+.section-title {
   display: flex;
-  flex-direction: row;
-  border-bottom: 1rpx solid gray;
+  align-items: center;
+  font-size: 30rpx;
+  font-weight: bold;
+  color: #333333;
+  margin: 10rpx 4rpx 20rpx;
 }
-.list-item image{
-  width:230rpx;
-  height: 150rpx;
-  margin: 10rpx;
+
+.section-bar {
+  width: 8rpx;
+  height: 32rpx;
+  background: #328EEB;
+  border-radius: 4rpx;
+  margin-right: 16rpx;
 }
-.list-item text{
-  width: 100%;
-  line-height: 60rpx;
-  font-size: 10pt;
+
+.empty {
+  text-align: center;
+  color: #999999;
+  font-size: 26rpx;
+  padding: 120rpx 0;
 }

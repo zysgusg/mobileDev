@@ -1,16 +1,22 @@
 <!--pages/index/index.wxml-->
 <!--幻灯片滚动-->
-<swiper indicator-dots="true" autoplay="true" interval="5000" duration="500">
-  <block wx:for="{{swiperImg}}" wx:key='swiper{{index}}'>
-    <swiper-item>
-      <image src="{{item.src}}" data-id="{{item.id}}" bindtap="goToDetail"></image>
-    </swiper-item>
-  </block>
-</swiper>
+<view class="swiper-wrap">
+  <swiper class="banner" indicator-dots="true" autoplay="true" interval="5000" duration="500"
+    indicator-color="rgba(255,255,255,0.5)" indicator-active-color="#ffffff">
+    <block wx:for="{{swiperImg}}" wx:key='swiper{{index}}'>
+      <swiper-item>
+        <image src="{{item.src}}" data-id="{{item.id}}" bindtap="goToDetail" mode="aspectFill"></image>
+      </swiper-item>
+    </block>
+  </swiper>
+</view>
 <!--新闻列表-->
-<view id='news-list'>
+<view id='news-list' class="news-list">
   <view class='list-item' wx:for="{{newsList}}" wx:for-item="news" wx:key="{{news.id}}">
-    <image src='{{news.poster}}'></image>
-    <text bindtap='goToDetail' data-id='{{news.id}}'>◇{{news.title}}——{{news.add_date}}</text>
+    <image src='{{news.poster}}' mode="aspectFill"></image>
+    <view class="list-info">
+      <text class="list-title" bindtap='goToDetail' data-id='{{news.id}}'>{{news.title}}</text>
+      <text class="list-date">{{news.add_date}}</text>
+    </view>
   </view>
 </view>
