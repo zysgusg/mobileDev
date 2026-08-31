@@ -1,0 +1,20 @@
+<!--pages/my/my.wxml-->
+<!-- 登陆页面 -->
+<view class="myLogin">
+  <block wx:if="{{isLogin}}">
+    <image src="{{src}}"></image>
+    <text>{{nickName}}</text>
+  </block>
+  <button wx:else bindtap="getUserInfo" >未登录，点此登录</button>
+</view>
+<!-- 收藏列表 -->
+<view class="myFavorite">
+  <text>我的收藏（{{number}}）</text>
+  <!-- 列表结构与样式与首页新闻列表保持一致 -->
+  <view id='news-list'>
+    <view class='list-item' wx:for="{{newsList}}" wx:for-item="news" wx:key="{{news.id}}">
+      <image src='{{news.poster}}'></image>
+      <text bindtap='goToDetail' data-id='{{news.id}}'>◇{{news.title}}——{{news.add_date}}</text>
+    </view>
+  </view>
+</view>

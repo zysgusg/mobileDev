@@ -1,0 +1,36 @@
+.container{
+  padding:15rpx;
+  /* text-align: center; */
+}
+.title{
+  font-size: 42rpx;
+  font-weight: bold;
+  line-height: 60rpx;
+  text-align: center;
+  color: #222222;
+  padding: 10rpx 10rpx 30rpx;
+}
+.poster image{
+  width: 100%;
+}
+.content text{
+  text-align: justify;
+  font-size: 30rpx;
+  line-height: 1.9;
+  color: #333333;
+  user-select:auto;
+  padding: 10rpx 10rpx 10rpx;
+}
+.add_date{
+  font-size: 26rpx;
+  color: #999999;
+  text-align: right;
+  line-height: 30rpx;
+  margin-right: 25rpx;
+  margin-top:20rpx;
+}
+button{
+  width: 250rpx;
+  height:100rpx;
+  margin:20rpx auto;
+}

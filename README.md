@@ -19,3 +19,13 @@
 **学习目标**：以制作一个名片小程序为案例，快速学习了解小程序前端开发。
 
 **参考资料**：https://developers.weixin.qq.com/community/business/doc/000c869e5c46586bd688cd6175fc0d
+
+
+
+### 实验三：高校新闻网
+
+**学习目标**： 制作海大主题的新闻网，新闻列表中使用最近的海大新闻。
+
+**参考资料**：https://gaopursuit.oss-cn-beijing.aliyuncs.com/2022/demo4_file.zip
+
+https://gaopursuit.oss-cn-beijing.aliyuncs.com/course/mobileDev/lab3.pdf
