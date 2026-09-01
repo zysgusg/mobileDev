@@ -6,7 +6,9 @@ Page({
       'level01.png',
       'level02.png',
       'level03.png',
-      'level04.png'
+      'level04.png',
+      'level05.png',
+      'level06.png'
     ]
   },
   // 自定义函数--游戏选关

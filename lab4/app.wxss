@@ -1,6 +1,6 @@
 /**app.wxss**/
 page {
-  background: linear-gradient(180deg, #3a7bd5 0%, #6aa5f0 100%);
+  background: #6aa5f0;
 }
 
 /*页面容器样式*/

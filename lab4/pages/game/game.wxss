@@ -78,12 +78,11 @@
   box-sizing: border-box;
 }
 
-/*画布白色衬底*/
+/*画布白色衬底（去除白色边框，让地图与背景蓝色平滑过渡）*/
 .canvasWrap {
-  background: #ffffff;
-  border-radius: 20rpx;
-  padding: 12rpx;
-  box-shadow: 0 10rpx 24rpx rgba(20, 70, 140, 0.28);
+  background: transparent;
+  padding: 0;
+  box-shadow: none;
 }
 
 /*游戏画布样式（尺寸由页面 JS 计算绑定）*/

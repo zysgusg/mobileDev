@@ -147,173 +147,115 @@ Page({
     // 使用双重for循环绘制8x8的地图
     for (var i = 0; i < 8; i++) {
       for (var j = 0; j < 8; j++) {
-        // 获取当前位置
-        let img = 'ice'
+        // 8*8 深浅交替的蓝色方格作为地图背景（浅蓝与页面背景颜色一致）
+        ctx.setFillStyle((i + j) % 2 === 0 ? '#6aa5f0' : '#4276c2')
+        ctx.fillRect(j * w, i * w, w, w)
+        // 石头（墙）
         if (map[i][j] == 1) {
-          img = 'stone'
+          ctx.drawImage('/images/icons/stone.png', j * w, i * w, w, w)
         } else if (map[i][j] == 3) {
-          img = 'pig'
+          // 终点
+          ctx.drawImage('/images/icons/pig.png', j * w, i * w, w, w)
+        } else if (map[i][j] == 6) {
+          // 特殊格子（ice）：穿过时移动两格
+          ctx.drawImage('/images/icons/ice.png', j * w, i * w, w, w)
         }
-        // 绘制地图
-        ctx.drawImage('/images/icons/' + img + '.png', j * w, i * w, w, w)
+        // 箱子
         if (box[i][j] == 4) {
-          // 绘制箱子
           ctx.drawImage('/images/icons/box.png', j * w, i * w, w, w)
         }
       }
     }
     // 绘制小鸟
     ctx.drawImage('/images/icons/bird.png', col * w, row * w, w, w)
+    // 地图边界：用深蓝色细线划出
+    ctx.setStrokeStyle('#2f5a94')
+    ctx.setLineWidth(2)
+    ctx.strokeRect(0, 0, size, size)
     ctx.draw()
   },
 
+  // 自定义函数--统一处理移动（含 ice 特殊格子滑行两格）
+  move: function (dr, dc) {
+    // 记录当前状态用于回退
+    var snapshot = { row: row, col: col, box: box.map(function (r) { return r.slice() }) }
+    var moved = false
+    var r1 = row + dr
+    var c1 = col + dc
+    // 目标格在界内
+    if (r1 >= 0 && r1 < 8 && c1 >= 0 && c1 < 8) {
+      if (map[r1][c1] == 1) {
+        // 前方是墙，无法移动
+      } else if (box[r1][c1] == 4) {
+        // 前方是箱子，尝试推动
+        var r2 = r1 + dr
+        var c2 = c1 + dc
+        if (r2 >= 0 && r2 < 8 && c2 >= 0 && c2 < 8 && map[r2][c2] != 1 && box[r2][c2] != 4) {
+          // 箱子从 (r1,c1) 推到 (r2,c2)
+          box[r1][c1] = 0
+          box[r2][c2] = 4
+          if (map[r2][c2] == 6) {
+            // 箱子落入 ice 特殊格子，若下一格无阻挡则箱子继续滑行一格（共两格）
+            var r3 = r2 + dr
+            var c3 = c2 + dc
+            if (r3 >= 0 && r3 < 8 && c3 >= 0 && c3 < 8 && map[r3][c3] != 1 && box[r3][c3] != 4) {
+              box[r2][c2] = 0
+              box[r3][c3] = 4
+              // 箱子滑行两格，小鸟只移动一格到箱子原位置
+              row = r1
+              col = c1
+            } else {
+              // 第二格被阻挡，箱子停在第一格，小鸟只移动一格
+              row = r1
+              col = c1
+            }
+          } else {
+            // 普通推动，小鸟移到 (r1,c1)
+            row = r1
+            col = c1
+          }
+          moved = true
+        }
+      } else {
+        // 前方无阻挡，小鸟移动；若落入 ice 特殊格子且下一格无阻挡则滑行两格
+        if (map[r1][c1] == 6) {
+          var r2 = r1 + dr
+          var c2 = c1 + dc
+          if (r2 >= 0 && r2 < 8 && c2 >= 0 && c2 < 8 && map[r2][c2] != 1 && box[r2][c2] != 4) {
+            row = r2
+            col = c2
+          } else {
+            // 第二格被阻挡，停在第一格
+            row = r1
+            col = c1
+          }
+        } else {
+          row = r1
+          col = c1
+        }
+        moved = true
+      }
+    }
+    // 移动有效时才记录历史，并累加计步器
+    if (moved) {
+      history.push(snapshot)
+      if (history.length > 200) history.shift()
+      this.setData({ steps: this.data.steps + 1 })
+    }
+    // 重新绘制地图
+    this.drawCanvas()
+    // 检查游戏是否成功
+    this.checkWin()
+  },
+
   // 自定义函数--方向键：上
-  up: function () {
-    // 记录当前状态用于回退
-    let snapshot = { row: row, col: col, box: box.map(function (r) { return r.slice() }) }
-    // 不在最顶端才考虑上移
-    if (row > 0) {
-      // 如果上方不是墙或箱子，可以移动小鸟
-      if (map[row - 1][col] != 1 && box[row - 1][col] != 4) {
-        // 更新当前小鸟的坐标
-        row = row - 1
-      }
-      // 如果上方是箱子
-      else if (box[row - 1][col] == 4) {
-        // 箱子不在最顶端才能考虑推动
-        if (row - 1 > 0) {
-          // 如果箱子上面不是墙或箱子
-          if (map[row - 2][col] != 1 && box[row - 2][col] != 4) {
-            box[row - 2][col] = 4
-            box[row - 1][col] = 0
-            // 更新当前小鸟的坐标
-            row = row - 1
-          }
-        }
-      }
-    }
-    // 移动有效时才记录历史，并累加计步器
-    if (row != snapshot.row || col != snapshot.col) {
-      history.push(snapshot)
-      if (history.length > 200) history.shift()
-      this.setData({ steps: this.data.steps + 1 })
-    }
-    // 重新绘制地图
-    this.drawCanvas()
-    // 检查游戏是否成功
-    this.checkWin()
-  },
-
+  up: function () { this.move(-1, 0) },
   // 自定义函数--方向键：下
-  down: function () {
-    // 记录当前状态用于回退
-    let snapshot = { row: row, col: col, box: box.map(function (r) { return r.slice() }) }
-    // 不在最底端才考虑下移
-    if (row < 7) {
-      // 如果下方不是墙或箱子，可以移动小鸟
-      if (map[row + 1][col] != 1 && box[row + 1][col] != 4) {
-        // 更新当前小鸟的坐标
-        row = row + 1
-      }
-      // 如果下方是箱子
-      else if (box[row + 1][col] == 4) {
-        // 箱子不在最底端才能考虑推动
-        if (row + 1 < 7) {
-          // 如果箱子下面不是墙或箱子
-          if (map[row + 2][col] != 1 && box[row + 2][col] != 4) {
-            box[row + 2][col] = 4
-            box[row + 1][col] = 0
-            // 更新当前小鸟的坐标
-            row = row + 1
-          }
-        }
-      }
-    }
-    // 移动有效时才记录历史，并累加计步器
-    if (row != snapshot.row || col != snapshot.col) {
-      history.push(snapshot)
-      if (history.length > 200) history.shift()
-      this.setData({ steps: this.data.steps + 1 })
-    }
-    // 重新绘制地图
-    this.drawCanvas()
-    // 检查游戏是否成功
-    this.checkWin()
-  },
-
+  down: function () { this.move(1, 0) },
   // 自定义函数--方向键：左
-  left: function () {
-    // 记录当前状态用于回退
-    let snapshot = { row: row, col: col, box: box.map(function (r) { return r.slice() }) }
-    // 不在最左端才考虑左移
-    if (col > 0) {
-      // 如果左边不是墙或箱子，可以移动小鸟
-      if (map[row][col - 1] != 1 && box[row][col - 1] != 4) {
-        // 更新当前小鸟的坐标
-        col = col - 1
-      }
-      // 如果左边是箱子
-      else if (box[row][col - 1] == 4) {
-        // 箱子不在最左端才能考虑推动
-        if (col - 1 > 0) {
-          // 如果箱子左边不是墙或箱子
-          if (map[row][col - 2] != 1 && box[row][col - 2] != 4) {
-            box[row][col - 2] = 4
-            box[row][col - 1] = 0
-            // 更新当前小鸟的坐标
-            col = col - 1
-          }
-        }
-      }
-    }
-    // 移动有效时才记录历史，并累加计步器
-    if (row != snapshot.row || col != snapshot.col) {
-      history.push(snapshot)
-      if (history.length > 200) history.shift()
-      this.setData({ steps: this.data.steps + 1 })
-    }
-    // 重新绘制地图
-    this.drawCanvas()
-    // 检查游戏是否成功
-    this.checkWin()
-  },
-
+  left: function () { this.move(0, -1) },
   // 自定义函数--方向键：右
-  right: function () {
-    // 记录当前状态用于回退
-    let snapshot = { row: row, col: col, box: box.map(function (r) { return r.slice() }) }
-    // 不在最右端才考虑右移
-    if (col < 7) {
-      // 如果右边不是墙或箱子，可以移动小鸟
-      if (map[row][col + 1] != 1 && box[row][col + 1] != 4) {
-        // 更新当前小鸟的坐标
-        col = col + 1
-      }
-      // 如果右边是箱子
-      else if (box[row][col + 1] == 4) {
-        // 箱子不在最右端才能考虑推动
-        if (col + 1 < 7) {
-          // 如果箱子右边不是墙或箱子
-          if (map[row][col + 2] != 1 && box[row][col + 2] != 4) {
-            box[row][col + 2] = 4
-            box[row][col + 1] = 0
-            // 更新当前小鸟的坐标
-            col = col + 1
-          }
-        }
-      }
-    }
-    // 移动有效时才记录历史，并累加计步器
-    if (row != snapshot.row || col != snapshot.col) {
-      history.push(snapshot)
-      if (history.length > 200) history.shift()
-      this.setData({ steps: this.data.steps + 1 })
-    }
-    // 重新绘制地图
-    this.drawCanvas()
-    // 检查游戏是否成功
-    this.checkWin()
-  },
+  right: function () { this.move(0, 1) },
 
   // 自定义函数--回退一步
   undo: function () {
