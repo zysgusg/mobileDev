@@ -1,0 +1,17 @@
+<!--index.wxml-->
+<view class="container">
+  <!--标题-->
+  <view class="header">
+    <text class="title">游戏选关</text>
+    <text class="subtitle">推箱子 · 把箱子推到目标点吧</text>
+  </view>
+  <!--关卡列表-->
+  <view class="levelBox">
+    <view class="box" wx:for="{{levels}}" wx:key="*this" hover-class="box-hover" bindtap="chooseLevel" data-level="{{index}}">
+      <view class="imgWrap">
+        <image class="levelImg" src="/images/{{item}}" mode="aspectFit"></image>
+      </view>
+      <text class="boxText">第{{index + 1}}关</text>
+    </view>
+  </view>
+</view>

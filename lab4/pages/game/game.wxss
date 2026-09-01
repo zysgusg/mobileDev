@@ -1,0 +1,159 @@
+/**game.wxss**/
+/*页面容器：固定为屏幕高度并强制内容不超出，避免方向键被挤出屏幕*/
+.container {
+  height: 100vh;
+  overflow: hidden;
+  justify-content: space-between;
+  padding: 16rpx 20rpx;
+}
+
+/*顶部标题区域（不参与伸缩，固定在顶部）*/
+.header {
+  position: relative;
+  flex-shrink: 0;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-top: 6rpx;
+  padding: 0 20rpx;
+  box-sizing: border-box;
+}
+
+.titleBox {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.subtitle {
+  margin-top: 6rpx;
+  font-size: 22rpx;
+  color: rgba(255, 255, 255, 0.9);
+  letter-spacing: 2rpx;
+}
+
+/*右上角记录区：计步器 + 最佳记录*/
+.recordBar {
+  position: absolute;
+  top: 4rpx;
+  right: 20rpx;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+}
+
+/*右上角计步器*/
+.stepsBar {
+  font-size: 24rpx;
+  color: #ffffff;
+  background: rgba(255, 255, 255, 0.18);
+  border: 1rpx solid rgba(255, 255, 255, 0.35);
+  padding: 8rpx 20rpx;
+  border-radius: 24rpx;
+  letter-spacing: 1rpx;
+}
+
+/*右上角最佳记录*/
+.bestBar {
+  margin-top: 10rpx;
+  font-size: 22rpx;
+  color: #ffffff;
+  background: rgba(255, 255, 255, 0.10);
+  border: 1rpx solid rgba(255, 255, 255, 0.25);
+  padding: 8rpx 20rpx;
+  border-radius: 24rpx;
+  letter-spacing: 1rpx;
+}
+
+/*画布占据中间剩余空间并居中*/
+.canvasArea {
+  flex: 1 1 0;
+  min-height: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  padding: 8rpx 0;
+  box-sizing: border-box;
+}
+
+/*画布白色衬底*/
+.canvasWrap {
+  background: #ffffff;
+  border-radius: 20rpx;
+  padding: 12rpx;
+  box-shadow: 0 10rpx 24rpx rgba(20, 70, 140, 0.28);
+}
+
+/*游戏画布样式（尺寸由页面 JS 计算绑定）*/
+canvas {
+  border-radius: 12rpx;
+}
+
+/*方向键按钮整体区域（不伸缩）*/
+.btnBox {
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin: 2rpx 0;
+}
+
+/*方向键按钮行*/
+.btnRow {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+}
+
+/*所有方向键按钮（尺寸由页面 JS 计算绑定，约两倍大小）*/
+.dirBtn {
+  margin: 8rpx;
+  border-radius: 22rpx;
+  padding: 0 !important;
+  color: #2c3e50;
+  background: #ffffff;
+  box-shadow: 0 8rpx 16rpx rgba(20, 70, 140, 0.28);
+}
+
+.dirBtn::after {
+  border: none;
+}
+
+/*底部操作按钮整体区域（不伸缩）*/
+.actionRow {
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  width: 100%;
+  margin-top: 60rpx;
+}
+
+.actionBtn {
+  flex: 1;
+  margin: 0 8rpx;
+  border-radius: 30rpx;
+  font-weight: bold;
+  color: #ffffff;
+  padding: 0 !important;
+  line-height: inherit;
+}
+
+.actionBtn::after {
+  border: none;
+}
+
+/*回退一步按钮*/
+.undoBtn {
+  background: linear-gradient(145deg, #4facfe 0%, #00c6fb 100%);
+  box-shadow: 0 8rpx 16rpx rgba(20, 70, 140, 0.22);
+}
+
+/*重新开始按钮*/
+.restartBtn {
+  background: linear-gradient(145deg, #ff7e5f 0%, #feb47b 100%);
+  box-shadow: 0 8rpx 16rpx rgba(0, 0, 0, 0.22);
+}

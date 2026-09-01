@@ -1,0 +1,36 @@
+<!--game.wxml-->
+<view class="container">
+  <!--关卡提示-->
+  <view class="header">
+    <view class="titleBox">
+      <text class="title">第{{level}}关</text>
+      <text class="subtitle">移动小鸟，把箱子推到目标点</text>
+    </view>
+    <view class="recordBar">
+      <view class="stepsBar">步数 {{steps}}</view>
+      <view class="bestBar">最佳 {{best || '--'}}</view>
+    </view>
+  </view>
+  <!--游戏画布-->
+  <view class="canvasArea">
+    <view class="canvasWrap">
+      <canvas canvas-id="myCanvas" style="width: {{canvasSize}}px; height: {{canvasSize}}px;"></canvas>
+    </view>
+  </view>
+  <!--方向键-->
+  <view class="btnBox">
+    <view class="btnRow">
+      <button class="dirBtn" style="width: {{btnSize}}px; height: {{btnSize}}px; line-height: {{btnSize}}px; font-size: {{btnFont}}px;" bindtap="up">↑</button>
+    </view>
+    <view class="btnRow">
+      <button class="dirBtn" style="width: {{btnSize}}px; height: {{btnSize}}px; line-height: {{btnSize}}px; font-size: {{btnFont}}px;" bindtap="left">←</button>
+      <button class="dirBtn" style="width: {{btnSize}}px; height: {{btnSize}}px; line-height: {{btnSize}}px; font-size: {{btnFont}}px;" bindtap="down">↓</button>
+      <button class="dirBtn" style="width: {{btnSize}}px; height: {{btnSize}}px; line-height: {{btnSize}}px; font-size: {{btnFont}}px;" bindtap="right">→</button>
+    </view>
+  </view>
+  <!--操作按钮：回退一步 + 重新开始-->
+  <view class="actionRow">
+    <button class="actionBtn undoBtn" style="height: {{actionH}}px; line-height: {{actionH}}px; font-size: {{actionFont}}px;" bindtap="undo">↩ 回退一步</button>
+    <button class="actionBtn restartBtn" style="height: {{actionH}}px; line-height: {{actionH}}px; font-size: {{actionFont}}px;" bindtap="restartGame">重新开始</button>
+  </view>
+</view>

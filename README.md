@@ -29,3 +29,11 @@
 **参考资料**：https://gaopursuit.oss-cn-beijing.aliyuncs.com/2022/demo4_file.zip
 
 https://gaopursuit.oss-cn-beijing.aliyuncs.com/course/mobileDev/lab3.pdf
+
+
+
+### 实验四：推箱子小游戏
+
+**学习目标**：1、综合所学知识创建完整的推箱子游戏；2、能够在开发过程中熟练掌握真机预览、调试等操作。
+
+**参考资料**：https://gaopursuit.oss-cn-beijing.aliyuncs.com/course/mobileDev/lab4.pdf
